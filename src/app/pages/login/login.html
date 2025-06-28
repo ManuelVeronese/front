@@ -1,0 +1,175 @@
+<div class="login-container">
+  <!-- Pantalla de Login -->
+  <div class="login-card" *ngIf="currentView === 'login'">
+    <!-- Header con logo -->
+    <div class="login-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i class="bi bi-lightning-fill"></i>
+        </div>
+        <h1 class="logo-text">DelyTrack</h1>
+      </div>
+    </div>
+
+    <!-- Formulario de Login -->
+    <div class="login-form">
+      <h2 class="form-title">Inicio de sesión</h2>
+      <p class="form-subtitle">Inicia sesión con tu cuenta de <strong>DelyTrack.com</strong></p>
+
+      <!-- Mensaje de error -->
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Demo credentials helper -->
+      <div class="demo-helper" *ngIf="!isLoading">
+        <small class="text-muted">
+          <strong>Demo:</strong> 
+          <a href="#" (click)="fillDemoCredentials(); $event.preventDefault()" class="demo-link">
+            admin&#64;delytrack.com / 123456
+          </a>
+        </small>
+      </div>
+
+      <form (ngSubmit)="onLogin()" #loginFormRef="ngForm">
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input 
+            type="email" 
+            class="form-control"
+            id="email"
+            [(ngModel)]="loginForm.email"
+            name="email"
+            placeholder="Escribe aquí"
+            required
+            [disabled]="isLoading">
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="password" class="form-label">Contraseña</label>
+          <input 
+            type="password" 
+            class="form-control"
+            id="password"
+            [(ngModel)]="loginForm.password"
+            name="password"
+            placeholder="Escribe aquí"
+            required
+            [disabled]="isLoading">
+        </div>
+
+        <!-- Botón de submit -->
+        <button 
+          type="submit" 
+          class="btn-login"
+          [disabled]="isLoading || !loginFormRef.form.valid">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          <span *ngIf="!isLoading">Inicia sesión</span>
+          <span *ngIf="isLoading">Iniciando sesión...</span>
+        </button>
+      </form>
+
+      <!-- Link a registro -->
+      <div class="form-footer">
+        <p>
+          No tienes cuenta? 
+          <a href="#" (click)="switchToRegister(); $event.preventDefault()" class="register-link">
+            <strong>Regístrate</strong>
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pantalla de Registro -->
+  <div class="login-card" *ngIf="currentView === 'register'">
+    <!-- Header con logo -->
+    <div class="login-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <i class="bi bi-lightning-fill"></i>
+        </div>
+        <h1 class="logo-text">DelyTrack</h1>
+      </div>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <div class="login-form">
+      <h2 class="form-title">Registro</h2>
+      <p class="form-subtitle">Regístrate en <strong>DelyTrack.com</strong></p>
+
+      <!-- Mensaje de error -->
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onRegister()" #registerFormRef="ngForm">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input 
+            type="text" 
+            class="form-control"
+            id="nombre"
+            [(ngModel)]="registerForm.nombre"
+            name="nombre"
+            placeholder="Escribe aquí"
+            required
+            [disabled]="isLoading">
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="registerEmail" class="form-label">Email</label>
+          <input 
+            type="email" 
+            class="form-control"
+            id="registerEmail"
+            [(ngModel)]="registerForm.email"
+            name="registerEmail"
+            placeholder="Escribe aquí"
+            required
+            [disabled]="isLoading">
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="registerPassword" class="form-label">Contraseña</label>
+          <input 
+            type="password" 
+            class="form-control"
+            id="registerPassword"
+            [(ngModel)]="registerForm.password"
+            name="registerPassword"
+            placeholder="Escribe aquí"
+            minlength="6"
+            required
+            [disabled]="isLoading">
+          <small class="form-text text-muted">Mínimo 6 caracteres</small>
+        </div>
+
+        <!-- Botón de submit -->
+        <button 
+          type="submit" 
+          class="btn-login"
+          [disabled]="isLoading || !registerFormRef.form.valid">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          <span *ngIf="!isLoading">Regístrate</span>
+          <span *ngIf="isLoading">Registrando...</span>
+        </button>
+      </form>
+
+      <!-- Link a login -->
+      <div class="form-footer">
+        <p>
+          Ya tienes cuenta? 
+          <a href="#" (click)="switchToLogin(); $event.preventDefault()" class="register-link">
+            <strong>Inicia sesión</strong>
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

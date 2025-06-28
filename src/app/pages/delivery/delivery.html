@@ -1,1 +1,648 @@
-<p>delivery works!</p>
+<div class="container-fluid p-4">
+  <!-- Header con botón de retroceso -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center mb-3">
+        <button 
+          class="btn btn-outline-secondary me-3 back-button"
+          (click)="showMainView()"
+          *ngIf="currentView !== 'main'">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <div>
+          <h2 class="mb-0">
+            <i class="bi bi-truck me-2"></i>
+            <span *ngIf="currentView === 'main'">Gestión de Deliveries</span>
+            <span *ngIf="currentView === 'create'">Crear Deliveries</span>
+            <span *ngIf="currentView === 'edit'">Actualizar Delivery</span>
+            <span *ngIf="currentView === 'list'">Listar Deliveries</span>
+            <span *ngIf="currentView === 'search-proximity'">Búsqueda por Proximidad</span>
+            <span *ngIf="currentView === 'search-zone'">Búsqueda de Deliveries por Zona</span>
+          </h2>
+          <p class="text-muted mb-0" *ngIf="currentView === 'main'">
+            Administrar repartidores, sus ubicaciones, estados y asignación de zonas
+          </p>
+          <p class="text-muted mb-0" *ngIf="currentView === 'search-zone'">
+            Buscar repartidores por zona
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="row mb-3" *ngIf="errorMessage || successMessage">
+    <div class="col-12">
+      <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage">
+        <strong>Error:</strong> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+      </div>
+      <div class="alert alert-success alert-dismissible fade show" *ngIf="successMessage">
+        <strong>Éxito:</strong> {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Principal - Panel de Gestión -->
+  <div class="row justify-content-center" *ngIf="currentView === 'main'">
+    <div class="col-md-6">
+      <div class="card delivery-main-card">
+        <div class="card-body text-center p-5">
+          <div class="d-grid gap-4">
+            <button 
+              class="btn btn-outline-primary btn-lg delivery-action-btn"
+              (click)="showCreateForm()"
+              [disabled]="isLoading">
+              Crear repartidor
+            </button>
+            
+            <button 
+              class="btn btn-outline-primary btn-lg delivery-action-btn"
+              (click)="showListView()"
+              [disabled]="isLoading">
+              Listar Repartidores
+            </button>
+            
+            <button 
+              class="btn btn-outline-primary btn-lg delivery-action-btn"
+              (click)="showProximitySearch()"
+              [disabled]="isLoading">
+              Buscar por proximidad
+            </button>
+            
+            <button 
+              class="btn btn-outline-primary btn-lg delivery-action-btn"
+              (click)="showZoneSearch()"
+              [disabled]="isLoading">
+              Delivery por zona
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Formulario de Creación -->
+  <div class="row justify-content-center" *ngIf="currentView === 'create'">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body p-4">
+          <form (ngSubmit)="onSubmit()" #deliveryFormRef="ngForm">
+            <!-- Radio (km) -->
+            <div class="mb-4">
+              <label for="radioKm" class="form-label">Radio (km)</label>
+              <input 
+                type="number" 
+                class="form-control form-control-lg"
+                id="radioKm"
+                [(ngModel)]="deliveryForm.radioKm"
+                name="radioKm"
+                step="0.1"
+                min="0.1"
+                placeholder="Radio"
+                required>
+            </div>
+
+            <!-- Latitud -->
+            <div class="mb-4">
+              <label for="latitud" class="form-label">Latitud</label>
+              <input 
+                type="number" 
+                class="form-control form-control-lg"
+                id="latitud"
+                [(ngModel)]="deliveryForm.latitud"
+                name="latitud"
+                step="0.000001"
+                min="-90"
+                max="90"
+                placeholder="Latitud"
+                required>
+            </div>
+
+            <!-- Longitud -->
+            <div class="mb-4">
+              <label for="longitud" class="form-label">Longitud</label>
+              <input 
+                type="number" 
+                class="form-control form-control-lg"
+                id="longitud"
+                [(ngModel)]="deliveryForm.longitud"
+                name="longitud"
+                step="0.000001"
+                min="-180"
+                max="180"
+                placeholder="Longitud"
+                required>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="mb-4">
+              <label for="ubicacion" class="form-label">Ubicación</label>
+              <input 
+                type="text" 
+                class="form-control form-control-lg"
+                id="ubicacion"
+                [(ngModel)]="deliveryForm.ubicacion"
+                name="ubicacion"
+                placeholder="Ej: Villa María"
+                required>
+            </div>
+
+            <!-- Botón de geolocalización -->
+            <div class="mb-4">
+              <button 
+                type="button"
+                class="btn btn-outline-info"
+                (click)="getCurrentLocation()">
+                <i class="bi bi-geo-alt-fill me-2"></i>
+                Usar mi ubicación actual
+              </button>
+            </div>
+
+            <!-- Botón submit -->
+            <div class="d-grid">
+              <button 
+                type="submit" 
+                class="btn btn-primary btn-lg"
+                [disabled]="isLoading || !deliveryFormRef.form.valid">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                Crear Repartidor
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Lista de Deliveries -->
+  <div class="row" *ngIf="currentView === 'list'">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Deliveries Registrados:</h5>
+          <span class="badge bg-secondary">{{ totalDeliveries }} delivery(s)</span>
+        </div>
+        <div class="card-body">
+          <!-- Buscador -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Buscar Deliveries"
+                #searchInput>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+
+          <!-- Lista de Deliveries -->
+          <div *ngIf="!isLoading && deliveries.length > 0">
+            <div class="delivery-item" *ngFor="let delivery of deliveries">
+              <div class="delivery-content">
+                <div class="delivery-info">
+                  <h6>Id: {{ delivery.id }} / Radio: {{ delivery.radioKm }}m</h6>
+                  <p class="mb-1">Ubicación: {{ delivery.ubicacion }}</p>
+                  <div class="delivery-details">
+                    <span class="badge me-2" [class]="getStateClass(delivery.estado)">
+                      Estado: {{ delivery.estado }}
+                    </span>
+                    <small class="text-muted">
+                      Zona/s: {{ delivery.zonas.join(', ') || '----' }}
+                    </small>
+                  </div>
+                </div>
+                <div class="delivery-actions">
+                  <button 
+                    class="btn btn-outline-primary btn-sm me-1"
+                    (click)="editDelivery(delivery)"
+                    [disabled]="isLoading">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="confirmDelete(delivery)"
+                    [disabled]="isLoading">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paginación -->
+          <div class="d-flex justify-content-between align-items-center mt-4" *ngIf="totalPages > 1">
+            <div class="pagination-info">
+              <small class="text-muted">
+                Mostrando {{ (currentPage - 1) * pageSize + 1 }} - 
+                {{ Math.min(currentPage * pageSize, totalDeliveries) }} 
+                de {{ totalDeliveries }} resultados
+              </small>
+            </div>
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="goToPage(currentPage - 1)">Anterior</button>
+                </li>
+                <li class="page-item" 
+                    *ngFor="let page of [].constructor(totalPages); let i = index"
+                    [class.active]="i + 1 === currentPage">
+                  <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link" (click)="goToPage(currentPage + 1)">Siguiente</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          <!-- Sin deliveries -->
+          <div class="text-center py-4" *ngIf="!isLoading && deliveries.length === 0">
+            <i class="bi bi-truck display-1 text-muted"></i>
+            <p class="text-muted mt-3">No hay deliveries registrados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Editar Delivery -->
+  <div class="row justify-content-center" *ngIf="currentView === 'edit'">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">Actualizar Delivery</h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #editFormRef="ngForm">
+            <div class="row">
+              <!-- Estado -->
+              <div class="col-md-6 mb-3">
+                <label for="estado" class="form-label">Estado:</label>
+                <select 
+                  class="form-select"
+                  id="estado"
+                  [(ngModel)]="deliveryForm.estado"
+                  name="estado"
+                  required>
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                  <option value="Disponible">Disponible</option>
+                  <option value="Ocupado">Ocupado</option>
+                </select>
+              </div>
+
+              <!-- Ubicación -->
+              <div class="col-md-6 mb-3">
+                <label for="ubicacionEdit" class="form-label">Ubicación:</label>
+                <input 
+                  type="text" 
+                  class="form-control"
+                  id="ubicacionEdit"
+                  [(ngModel)]="deliveryForm.ubicacion"
+                  name="ubicacionEdit"
+                  required>
+              </div>
+
+              <!-- Radio -->
+              <div class="col-md-4 mb-3">
+                <label for="radioEdit" class="form-label">Radio (km):</label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="radioEdit"
+                  [(ngModel)]="deliveryForm.radioKm"
+                  name="radioEdit"
+                  step="0.1"
+                  min="0.1"
+                  required>
+              </div>
+
+              <!-- Latitud -->
+              <div class="col-md-4 mb-3">
+                <label for="latitudEdit" class="form-label">Latitud:</label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="latitudEdit"
+                  [(ngModel)]="deliveryForm.latitud"
+                  name="latitudEdit"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  required>
+              </div>
+
+              <!-- Longitud -->
+              <div class="col-md-4 mb-3">
+                <label for="longitudEdit" class="form-label">Longitud:</label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="longitudEdit"
+                  [(ngModel)]="deliveryForm.longitud"
+                  name="longitudEdit"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  required>
+              </div>
+
+              <!-- Zona/s -->
+              <div class="col-12 mb-3">
+                <label class="form-label">Zona/s:</label>
+                <div class="zones-container">
+                  <div class="form-check" *ngFor="let zona of availableZones">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      [id]="'zona-' + zona"
+                      [checked]="isZoneSelected(zona)"
+                      (change)="onZoneChangeEvent(zona, $event)">
+                    <label class="form-check-label" [for]="'zona-' + zona">
+                      {{ zona }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between">
+              <button 
+                type="button" 
+                class="btn btn-secondary"
+                (click)="showMainView()"
+                [disabled]="isLoading">
+                Cancelar
+              </button>
+              
+              <button 
+                type="submit" 
+                class="btn btn-info"
+                [disabled]="isLoading || !editFormRef.form.valid">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                Guardar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Búsqueda por Proximidad -->
+  <div class="row justify-content-center" *ngIf="currentView === 'search-proximity'">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <form (ngSubmit)="searchByProximity()" #proximityFormRef="ngForm">
+            <div class="row">
+              <!-- Lat -->
+              <div class="col-md-4 mb-3">
+                <input 
+                  type="number" 
+                  class="form-control form-control-lg"
+                  [(ngModel)]="proximitySearchForm.latitud"
+                  name="lat"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  placeholder="Lat: ---"
+                  required>
+              </div>
+
+              <!-- Long -->
+              <div class="col-md-4 mb-3">
+                <input 
+                  type="number" 
+                  class="form-control form-control-lg"
+                  [(ngModel)]="proximitySearchForm.longitud"
+                  name="long"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  placeholder="Long: ---"
+                  required>
+              </div>
+
+              <!-- Buscar button -->
+              <div class="col-md-4 mb-3">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-lg w-100 search-btn"
+                  [disabled]="isSearching || !proximityFormRef.form.valid">
+                  <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="bi bi-search" *ngIf="!isSearching"></i>
+                </button>
+              </div>
+
+              <!-- Radio -->
+              <div class="col-12 mb-3">
+                <input 
+                  type="number" 
+                  class="form-control form-control-lg"
+                  [(ngModel)]="proximitySearchForm.radioKm"
+                  name="radio"
+                  step="0.1"
+                  min="0.1"
+                  placeholder="Radio: ---"
+                  required>
+              </div>
+
+              <!-- Botón de geolocalización -->
+              <div class="col-12 mb-3">
+                <button 
+                  type="button"
+                  class="btn btn-outline-info"
+                  (click)="getCurrentLocation()">
+                  <i class="bi bi-geo-alt-fill me-2"></i>
+                  Usar mi ubicación actual
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Resultados de búsqueda -->
+          <div *ngIf="searchResults.length > 0" class="mt-4">
+            <h6>Resultados encontrados:</h6>
+            <div class="delivery-item" *ngFor="let delivery of searchResults">
+              <div class="delivery-content">
+                <div class="delivery-info">
+                  <h6>Id: {{ delivery.id }} / Radio: {{ delivery.radioKm }}m</h6>
+                  <p class="mb-1">Ubicación: {{ delivery.ubicacion }}</p>
+                  <div class="delivery-details">
+                    <span class="badge" [class]="getStateClass(delivery.estado)">
+                      Estado: {{ delivery.estado }}
+                    </span>
+                  </div>
+                </div>
+                <div class="delivery-actions">
+                  <button 
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="editDelivery(delivery)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paginación para resultados -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted">
+                Mostrando {{ searchResults.length }} resultado(s)
+              </small>
+              <nav>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item">
+                    <button class="page-link">Anterior</button>
+                  </li>
+                  <li class="page-item active">
+                    <button class="page-link">1</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">2</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">3</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">Siguiente</button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Búsqueda por Zona -->
+  <div class="row justify-content-center" *ngIf="currentView === 'search-zone'">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <form (ngSubmit)="searchByZone()" #zoneFormRef="ngForm">
+            <div class="mb-4">
+              <select 
+                class="form-select form-select-lg"
+                [(ngModel)]="zoneSearchForm.zonaSeleccionada"
+                name="zona"
+                required>
+                <option value="">Selecciona una zona</option>
+                <option *ngFor="let zona of availableZones" [value]="zona">
+                  {{ zona }}
+                </option>
+              </select>
+            </div>
+
+            <div class="d-grid mb-4">
+              <button 
+                type="submit" 
+                class="btn btn-primary btn-lg"
+                [disabled]="isSearching || !zoneFormRef.form.valid">
+                <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-2"></span>
+                Buscar
+              </button>
+            </div>
+          </form>
+
+          <!-- Resultados de búsqueda por zona -->
+          <div *ngIf="searchResults.length > 0" class="mt-4">
+            <div class="delivery-item" *ngFor="let delivery of searchResults">
+              <div class="delivery-content">
+                <div class="delivery-info">
+                  <h6>Id: {{ delivery.id }} / Radio: {{ delivery.radioKm }}km</h6>
+                  <p class="mb-1">Ubicación: {{ delivery.ubicacion }}</p>
+                  <div class="delivery-details">
+                    <span class="badge me-2" [class]="getStateClass(delivery.estado)">
+                      Estado: {{ delivery.estado }}
+                    </span>
+                    <small class="text-muted">
+                      Zona: {{ delivery.zonas.join(', ') }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paginación para resultados -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted">
+                Mostrando {{ searchResults.length }} resultado(s)
+              </small>
+              <nav>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item">
+                    <button class="page-link">Anterior</button>
+                  </li>
+                  <li class="page-item active">
+                    <button class="page-link">1</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">2</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">3</button>
+                  </li>
+                  <li class="page-item">
+                    <button class="page-link">Siguiente</button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade show d-block" *ngIf="showDeleteModal" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Eliminación</h5>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro que quieres eliminar este delivery?</p>
+        <div class="delivery-preview" *ngIf="deliveryToDelete">
+          <small class="text-muted">
+            <strong>ID:</strong> {{ deliveryToDelete.id }}<br>
+            <strong>Ubicación:</strong> {{ deliveryToDelete.ubicacion }}<br>
+            <strong>Estado:</strong> {{ deliveryToDelete.estado }}
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="cancelDelete()"
+          [disabled]="isLoading">
+          cancelar
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-danger"
+          (click)="deleteDelivery()"
+          [disabled]="isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
