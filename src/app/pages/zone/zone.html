@@ -1,0 +1,282 @@
+<div class="container-fluid p-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="mb-0">
+        <i class="bi bi-geo-alt-fill me-2"></i>
+        Gestión de Zonas
+      </h2>
+      <p class="text-muted">Administra las zonas de entrega del delivery</p>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="row mb-3" *ngIf="errorMessage || successMessage">
+    <div class="col-12">
+      <div class="alert alert-danger alert-dismissible fade show" *ngIf="errorMessage">
+        <strong>Error:</strong> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+      </div>
+      <div class="alert alert-success alert-dismissible fade show" *ngIf="successMessage">
+        <strong>Éxito:</strong> {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Lista de Zonas -->
+  <div class="row" *ngIf="currentView === 'list'">
+    <!-- Panel izquierdo - Gestión -->
+    <div class="col-md-4">
+      <div class="card zone-management-card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-gear-fill me-2"></i>
+            Gestión de Zonas
+          </h5>
+        </div>
+        <div class="card-body text-center">
+          <p class="text-muted mb-4">Administra las zonas de entrega</p>
+          
+          <div class="d-grid gap-3">
+            <button 
+              class="btn btn-success btn-lg"
+              (click)="showCreateForm()"
+              [disabled]="isLoading">
+              <i class="bi bi-plus-circle me-2"></i>
+              Crear Zona
+            </button>
+            
+            <button 
+              class="btn btn-info btn-lg"
+              (click)="loadZones()"
+              [disabled]="isLoading">
+              <i class="bi bi-arrow-clockwise me-2"></i>
+              <span *ngIf="isLoading">Cargando...</span>
+              <span *ngIf="!isLoading">Listar Zonas</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel derecho - Lista de Zonas -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>
+            Listar Zonas
+          </h5>
+          <span class="badge bg-secondary">{{ zones.length }} zona(s)</span>
+        </div>
+        <div class="card-body">
+          <!-- Buscador -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Buscar Zonas"
+                #searchInput>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+
+          <!-- Lista de Zonas -->
+          <div *ngIf="!isLoading && zones.length > 0">
+            <div class="zone-item" *ngFor="let zone of zones">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="zone-info">
+                  <h6 class="zone-name">{{ zone.nombre }}</h6>
+                  <div class="zone-details">
+                    <span class="badge" 
+                          [class]="zone.estado === 'Activo' ? 'bg-success' : 'bg-secondary'">
+                      {{ zone.estado }}
+                    </span>
+                    <small class="text-muted ms-2">
+                      Radio: {{ zone.radioKm }} km
+                    </small>
+                  </div>
+                  <small class="text-muted">
+                    Lat: {{ zone.latitud | number:'1.6-6' }}, 
+                    Lng: {{ zone.longitud | number:'1.6-6' }}
+                  </small>
+                </div>
+                <div class="zone-actions">
+                  <button 
+                    class="btn btn-outline-primary btn-sm me-1"
+                    (click)="editZone(zone)"
+                    [disabled]="isLoading">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deleteZone(zone)"
+                    [disabled]="isLoading">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sin zonas -->
+          <div class="text-center py-4" *ngIf="!isLoading && zones.length === 0">
+            <i class="bi bi-geo-alt display-1 text-muted"></i>
+            <p class="text-muted mt-3">No hay zonas registradas</p>
+            <button class="btn btn-primary" (click)="showCreateForm()">
+              <i class="bi bi-plus-circle me-2"></i>
+              Crear primera zona
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista Formulario (Crear/Editar) -->
+  <div class="row" *ngIf="currentView === 'create' || currentView === 'edit'">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-plus-circle me-2" *ngIf="currentView === 'create'"></i>
+            <i class="bi bi-pencil me-2" *ngIf="currentView === 'edit'"></i>
+            {{ currentView === 'create' ? 'Crear Zona de Entrega' : 'Actualizar Zona' }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #zoneFormRef="ngForm">
+            <div class="row">
+              <!-- Nombre de la Zona -->
+              <div class="col-md-6 mb-3">
+                <label for="nombre" class="form-label">
+                  Nombre de la Zona <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control"
+                  id="nombre"
+                  [(ngModel)]="zoneForm.nombre"
+                  name="nombre"
+                  placeholder="Ej: Centro de la Ciudad"
+                  required>
+              </div>
+
+              <!-- Estado -->
+              <div class="col-md-6 mb-3">
+                <label for="estado" class="form-label">
+                  Estado <span class="text-danger">*</span>
+                </label>
+                <select 
+                  class="form-select"
+                  id="estado"
+                  [(ngModel)]="zoneForm.estado"
+                  name="estado"
+                  required>
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </select>
+              </div>
+
+              <!-- Latitud -->
+              <div class="col-md-4 mb-3">
+                <label for="latitud" class="form-label">
+                  Latitud <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="latitud"
+                  [(ngModel)]="zoneForm.latitud"
+                  name="latitud"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  placeholder="-34.603722"
+                  required>
+              </div>
+
+              <!-- Longitud -->
+              <div class="col-md-4 mb-3">
+                <label for="longitud" class="form-label">
+                  Longitud <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="longitud"
+                  [(ngModel)]="zoneForm.longitud"
+                  name="longitud"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  placeholder="-58.381592"
+                  required>
+              </div>
+
+              <!-- Radio -->
+              <div class="col-md-4 mb-3">
+                <label for="radioKm" class="form-label">
+                  Radio (km) <span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  id="radioKm"
+                  [(ngModel)]="zoneForm.radioKm"
+                  name="radioKm"
+                  step="0.1"
+                  min="0.1"
+                  placeholder="5.0"
+                  required>
+              </div>
+
+              <!-- Botón de geolocalización -->
+              <div class="col-12 mb-3">
+                <button 
+                  type="button"
+                  class="btn btn-outline-info"
+                  (click)="getCurrentLocation()">
+                  <i class="bi bi-geo-alt-fill me-2"></i>
+                  Usar mi ubicación actual
+                </button>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between">
+              <button 
+                type="button" 
+                class="btn btn-secondary"
+                (click)="showListView()"
+                [disabled]="isLoading">
+                <i class="bi bi-arrow-left me-2"></i>
+                Cancelar
+              </button>
+              
+              <button 
+                type="submit" 
+                class="btn btn-success"
+                [disabled]="isLoading || !zoneFormRef.form.valid">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-check-circle me-2" *ngIf="!isLoading"></i>
+                {{ currentView === 'create' ? 'Crear Zona' : 'Actualizar Zona' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

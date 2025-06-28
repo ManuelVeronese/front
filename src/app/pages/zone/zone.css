@@ -1,0 +1,203 @@
+/* Estilos para el componente Zone */
+
+.zone-management-card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.zone-management-card .card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+}
+
+.zone-management-card .card-body {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 2rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-lg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Lista de zonas */
+.zone-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.zone-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.zone-name {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.zone-details {
+  margin-bottom: 0.5rem;
+}
+
+.zone-details .badge {
+  font-size: 0.75rem;
+}
+
+.zone-actions {
+  display: flex;
+  align-items: center;
+}
+
+.zone-actions .btn {
+  border-radius: 6px;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Formulario */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header.bg-success {
+  background: linear-gradient(135deg, #28a745, #20c997) !important;
+  border: none;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .zone-management-card .card-body {
+    padding: 1.5rem;
+  }
+  
+  .zone-item {
+    padding: 0.75rem;
+  }
+  
+  .zone-actions {
+    margin-top: 0.5rem;
+    justify-content: flex-end;
+  }
+}
+
+/* Estados de carga */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Iconos Bootstrap */
+.bi {
+  font-family: 'Bootstrap Icons';
+}
+
+/* Alertas personalizadas */
+.alert {
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.zone-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Mejoras visuales */
+.input-group-text {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-right: none;
+}
+
+.input-group .form-control {
+  border-left: none;
+}
+
+.badge {
+  padding: 0.5em 0.75em;
+  font-size: 0.75em;
+  border-radius: 6px;
+}
+
+/* Botones de acción personalizados */
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-info {
+  color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.btn-outline-info:hover {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  color: white;
+}
